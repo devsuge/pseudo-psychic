@@ -1,9 +1,9 @@
 from flask import Flask, request, render_template, session
-import random
 import psychics
+import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = random._urandom(24)
+app.config['SECRET_KEY'] = os.urandom(20).hex()
 
 
 @app.route('/', methods=['GET'])
@@ -29,8 +29,12 @@ def predict():
     else:
         answer_2 = psychics.range_psychic.predict(session['history_psychic2'][-1])
 
-    session['history_psychic1'].append(answer_1)
-    session['history_psychic2'].append(answer_2)
+    if (len(session['history_psychic1']) - len(session['history_digit'])) == 1:
+        session['history_psychic1'][-1] = answer_1
+        session['history_psychic2'][-1] = answer_2
+    else:
+        session['history_psychic1'].append(answer_1)
+        session['history_psychic2'].append(answer_2)
 
     if not session.modified:
         session.modified = True
