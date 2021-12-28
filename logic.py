@@ -20,10 +20,8 @@ class RangePsychic(RandomPsychic):
     def get_predict(self):
         if RangePsychic.predict < 99:
             self.predict += 1
-            self.history.append(self.predict)
         else:
             self.predict = 10
-            self.history.append(self.predict)
 
 
 class Player(object):

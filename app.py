@@ -30,11 +30,7 @@ class PredictView(View):
 
     def dispatch_request(self):
         self.context.ask_psychics()
-
         session['Player'] = pickle.dumps(self.context)
-        if not session.modified:
-            session.modified = True
-
         return render_template(self.template_name, Player=self.context, len=len(self.context.history))
 
 
@@ -50,12 +46,9 @@ class AnswerView(View):
         if request.method == "POST":
             digit = int(request.form['digit'])
             self.context.check_predict(digit)
-
             session['Player'] = pickle.dumps(self.context)
-            if not session.modified:
-                session.modified = True
-
             return render_template('index.html')
+
         return render_template('answer.html')
 
 
