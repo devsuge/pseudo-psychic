@@ -8,40 +8,60 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(20).hex()
 
 
-@app.route('/', methods=['GET'])
-def index():
-    if not('Player' in session):
-        session['Player'] = pickle.dumps(logic.Player())
-    return render_template('index.html', session=session)
+class IndexView(View):
+    methods = ['GET']
+
+    def __init__(self, template_name):
+        self.template_name = template_name
+        if not ('Player' in session):
+            session['Player'] = pickle.dumps(logic.Player())
+
+    def dispatch_request(self):
+        return render_template(self.template_name, session=session)
 
 
-@app.route('/predict', methods=['GET'])
-def predict():
-    pl = pickle.loads(session['Player'])
-    pl.ask_psychics()
-    session['Player'] = pickle.dumps(pl)
+class PredictView(View):
+    context = logic.Player()
+    methods = ['GET']
 
-    if not session.modified:
-        session.modified = True
+    def __init__(self, template_name):
+        self.template_name = template_name
+        self.context = pickle.loads(session['Player'])
 
-    return render_template('predict.html', Player=pl, len=len(pl.history))
+    def dispatch_request(self):
+        self.context.ask_psychics()
 
-
-@app.route('/answer', methods=['POST', 'GET'])
-def answer():
-    if request.method == "POST":
-        pl = pickle.loads(session['Player'])
-        digit = int(request.form['digit'])
-        pl.check_predict(digit)
-        session['Player'] = pickle.dumps(pl)
-
+        session['Player'] = pickle.dumps(self.context)
         if not session.modified:
             session.modified = True
 
-        return render_template('index.html')
-    return render_template('answer.html')
+        return render_template(self.template_name, Player=self.context, len=len(self.context.history))
 
+
+class AnswerView(View):
+    context = logic.Player()
+    methods = ['POST', 'GET']
+
+    def __init__(self, template_name):
+        self.template_name = template_name
+        self.context = pickle.loads(session['Player'])
+
+    def dispatch_request(self):
+        if request.method == "POST":
+            digit = int(request.form['digit'])
+            self.context.check_predict(digit)
+
+            session['Player'] = pickle.dumps(self.context)
+            if not session.modified:
+                session.modified = True
+
+            return render_template('index.html')
+        return render_template('answer.html')
+
+
+app.add_url_rule('/', view_func=IndexView.as_view('index_page', template_name='index.html'))
+app.add_url_rule('/predict', view_func=PredictView.as_view('predict_page', template_name='predict.html'))
+app.add_url_rule('/answer', view_func=AnswerView.as_view('answer_page', template_name='answer.html'))
 
 if __name__ == '__main__':
     app.run()
-
