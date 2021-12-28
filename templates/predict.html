@@ -6,13 +6,13 @@
 </head>
 <body>
     {% for i in range(len) %}
-        {{ session.history_psychic1[i] }}
-        {{ session.history_psychic2[i] }}
-        ({{ session.history_digit[i] }})
+        {{ Player.psychics[0].history[i] }}
+        {{ Player.psychics[1].history[i] }}
+        ({{ Player.history[i] }})
         <br>
     {% endfor %}
-    {{ session.history_psychic1[-1] }} ({{ session.proxy_list[0] }})
-    {{ session.history_psychic2[-1] }} ({{ session.proxy_list[1] }})
+    {{ Player.psychics[0].predict }} ({{ Player.proxy[0] }})
+    {{ Player.psychics[1].predict }} ({{ Player.proxy[1] }})
     <form action="/answer " target="_self">
          <button type="submit">Записать число</button>
     </form>
